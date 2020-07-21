@@ -18,6 +18,25 @@ indicating which directories holds your event files. Here's a simple example:
     path = "~/projets/perso/remhind/test_calendar"
 ```
 
+### Notification timeout
+
+You can can specify a timeout for your notifications in the config file. Allowed
+values are
+
+- DEFAULT or NOT SET - Use your notification tools' default timeout
+- NEVER - Notification will be displayed until clicked away
+- 5000 - A number will be interpreted as timeout in milliseconds. The
+    notification will automatically disappear after this time.
+
+```
+[notifications]
+    timeout = "NEVER"
+[calendars]
+    [calendars.test]
+    name = "Test"
+    path = "~/projets/perso/remhind/test_calendar"
+```
+
 ## Installing
 
 `remhind` can be installed through PyPI using pip.

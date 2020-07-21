@@ -430,19 +430,21 @@ async def check_events(notification_config, calendar_store):
         await asyncio.sleep(45)
 
 def add_notification_timeout(notification_config, notification):
-    timeout = Notify.EXPIRES_DEFAULT
     try:
-        timeout = notification_config['timeout']
-        if timeout == "NEVER":
-            timeout = Notify.EXPIRES_NEVER
-            logging.debug(
-                f'notification timeout: never')
-        else:
-            timeout = int(timeout)
-            logging.debug(
-                f'notification timeout: '+str(timeout))
-    except ValueError:
-        logging.debug(f'notification timeout: default')
-        pass
+        config_timeout = notification_config['timeout']
+    except KeyError:
+        logging.debug(f'Using default timeout')
+        return
+        
+    if config_timeout == "DEFAULT":
+        logging.debug(f'Using default timeout')
+        return;
 
+    if config_timeout == "NEVER":
+        logging.debug(f'Timeout: never')
+        notification.set_timeout(Notify.EXPIRES_NEVER)
+        return
+
+    timeout = int(config_timeout);
+    logging.debug(f'Timeout in milliseconds: '+str(timeout) )
     notification.set_timeout(timeout)
