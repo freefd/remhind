@@ -25,7 +25,7 @@ async def monitor_file_events(args):
 
     calendars = CalendarStore(config['calendars'].values(), args.database)
 
-    events_checker = check_events(calendars)
+    events_checker = check_events(config['notifications'], calendars)
     calendars_monitor = monitor_calendars(config['calendars'], calendars)
     await asyncio.gather(events_checker, calendars_monitor)
 

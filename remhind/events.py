@@ -412,7 +412,7 @@ class CalendarStore:
             self.events.add(component, cal_file)
 
 
-async def check_events(calendar_store):
+async def check_events(notification_config, calendar_store):
     last_check = None
     while True:
         now = dt.datetime.now(LOCAL_TZ).replace(second=0, microsecond=0)
@@ -424,6 +424,25 @@ async def check_events(calendar_store):
                     f'Notifying of alarm {alarm.id} "{alarm.message}"')
                 n = Notify.Notification.new(
                     "{a.due_date:%H:%M} {a.message}".format(a=alarm), "Alarm")
+                add_notification_timeout(notification_config, n)
                 n.show()
         # Take some security to ensure we don't miss any minute
         await asyncio.sleep(45)
+
+def add_notification_timeout(notification_config, notification):
+    timeout = Notify.EXPIRES_DEFAULT
+    try:
+        timeout = notification_config['timeout']
+        if timeout == "NEVER":
+            timeout = Notify.EXPIRES_NEVER
+            logging.debug(
+                f'notification timeout: never')
+        else:
+            timeout = int(timeout)
+            logging.debug(
+                f'notification timeout: '+str(timeout))
+    except ValueError:
+        logging.debug(f'notification timeout: default')
+        pass
+
+    notification.set_timeout(timeout)
