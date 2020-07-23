@@ -13,9 +13,6 @@ import pytz
 from dateutil.rrule import rruleset, rrulestr
 from tzlocal import get_localzone
 
-gi.require_version('Notify', '0.7')
-from gi.repository import Notify  # noqa
-
 LOCAL_TZ = get_localzone()
 MIN_SEQ = -999
 MIN_DT = dt.datetime(1900, 1, 1, tzinfo=LOCAL_TZ)
@@ -103,6 +100,16 @@ class Alarm:
     due_timestamp: InitVar
     date: Optional[dt.datetime] = None
     due_date: Optional[dt.datetime] = None
+
+    @staticmethod
+    def get_example_alarm():
+        return Alarm(
+            id=4522,
+            event='58J8X5N2ZGVEGU5TUWURLZKGQIAQQRQ73GVN',
+            message='I have a date',
+            date_timestamp = _to_utc_timestamp(dt.datetime.now()),
+            due_timestamp = _to_utc_timestamp(dt.datetime.now() + dt.timedelta(minutes=5))
+        )
 
     def __post_init__(self, date_timestamp, due_timestamp):
         self.date = _from_utc_timestamp(date_timestamp)
@@ -260,9 +267,10 @@ class SQLiteDB:
 
 class EventCollection:
 
-    def __init__(self, db_path=None):
+    def __init__(self, db_path=None, config=None):
         self.db = SQLiteDB(db_path)
         self._last_occurences = self.db.get_last_occurences()
+        self._config = config
 
     def add(self, cal_obj, ics, occurence=None):
         logging.debug(f"Adding event '{cal_obj['uid']}'"
@@ -302,7 +310,7 @@ class EventCollection:
         if occurence is None:
             occurence = latest_occurence
 
-        def _add_occurence(dt, sequence):
+        def _add_occurence(event_dt, sequence):
             is_todo = isinstance(cal_obj, icalendar.Todo)
             for component in cal_obj.subcomponents:
                 if not isinstance(component, icalendar.Alarm):
@@ -314,19 +322,27 @@ class EventCollection:
                     alarm_dt = trigger.dt
                 else:
                     if trigger.params.get('related') == 'END':
-                        alarm_dt = dt + duration + trigger.dt
+                        alarm_dt = event_dt + duration + trigger.dt
                     else:
-                        alarm_dt = dt + trigger.dt
+                        alarm_dt = event_dt + trigger.dt
 
                 message = component.get('description', summary)
+                if message.upper() == 'NONE':
+                    message = summary
                 if message:
                     self.db.add_alarm(
-                        cal_obj['uid'], alarm_dt, dt, message, is_todo,
+                        cal_obj['uid'], alarm_dt, event_dt, message, is_todo,
                         sequence)
 
             if summary:
-                self.db.add_alarm(
-                    cal_obj['uid'], dt, dt, summary, is_todo, sequence)
+                try:
+                    alerts_before_event = self._config['alert_before_event_minutes']
+                except KeyError:
+                    alerts_before_event = [ 0 ]
+                for alert_before_event in alerts_before_event:
+                    event_alert = event_dt - dt.timedelta(minutes=alert_before_event)
+                    self.db.add_alarm(
+                        cal_obj['uid'], event_alert, event_dt, summary, is_todo, sequence)
 
         has_rules = ('rrule' in cal_obj or 'exrule' in cal_obj
             or 'rdate' in cal_obj or 'exdate' in cal_obj)
@@ -376,9 +392,9 @@ class EventCollection:
 
 class CalendarStore:
 
-    def __init__(self, sources, db_path):
+    def __init__(self, sources, db_path, config=None):
         self.sources = sources
-        self.events = EventCollection(db_path)
+        self.events = EventCollection(db_path, config)
         for source in sources:
             self.add_source_events(source)
 
@@ -411,8 +427,13 @@ class CalendarStore:
         for cal_file, component in self._get_components_from_ics(ics):
             self.events.add(component, cal_file)
 
+def display_test_event(notifier):
+    logging.info(f'Displaying test event')
+    event = Alarm.get_example_alarm()
+    notifier.show(event)
+    logging.debug(f'test event displayed')
 
-async def check_events(notification_config, calendar_store):
+async def check_events(notifier, calendar_store):
     last_check = None
     while True:
         now = dt.datetime.now(LOCAL_TZ).replace(second=0, microsecond=0)
@@ -420,31 +441,7 @@ async def check_events(notification_config, calendar_store):
             last_check = now
             due_alarms = calendar_store.events.get_due_alarms(now)
             for alarm in due_alarms:
-                logging.debug(
-                    f'Notifying of alarm {alarm.id} "{alarm.message}"')
-                n = Notify.Notification.new(
-                    "{a.due_date:%H:%M} {a.message}".format(a=alarm), "Alarm")
-                add_notification_timeout(notification_config, n)
-                n.show()
+                notifier.show(alarm)
         # Take some security to ensure we don't miss any minute
         await asyncio.sleep(45)
 
-def add_notification_timeout(notification_config, notification):
-    try:
-        config_timeout = notification_config['timeout']
-    except KeyError:
-        logging.debug(f'Using default timeout')
-        return
-        
-    if config_timeout == "DEFAULT":
-        logging.debug(f'Using default timeout')
-        return;
-
-    if config_timeout == "NEVER":
-        logging.debug(f'Timeout: never')
-        notification.set_timeout(Notify.EXPIRES_NEVER)
-        return
-
-    timeout = int(config_timeout);
-    logging.debug(f'Timeout in milliseconds: '+str(timeout) )
-    notification.set_timeout(timeout)

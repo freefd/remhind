@@ -8,7 +8,8 @@ import toml
 from xdg import XDG_CONFIG_HOME, XDG_CACHE_HOME
 
 from .monitor import monitor_calendars
-from .events import check_events, CalendarStore
+from .events import check_events, CalendarStore, display_test_event
+from .notification import Notifier
 
 gi.require_version('Notify', '0.7')
 from gi.repository import Notify  # noqa
@@ -23,22 +24,36 @@ async def monitor_file_events(args):
         format='%(asctime)s:%(levelname)s:%(message)s', level=log_level)
     Notify.init('remhind')
 
-    calendars = CalendarStore(config['calendars'].values(), args.database)
-
     try:
         notifications_config = config['notifications']
     except KeyError:
         notifications_config = {}
+    notifier = Notifier(notifications_config, args.title_template, args.message_template)
 
-    events_checker = check_events(notifications_config, calendars)
+    if args.action == "test":
+        display_test_event(notifier)
+        return
+
+    calendars = CalendarStore(config['calendars'].values(), args.database,
+                              notifications_config)
+
+    events_checker = check_events(notifier, calendars)
     calendars_monitor = monitor_calendars(config['calendars'], calendars)
     await asyncio.gather(events_checker, calendars_monitor)
 
 
 def main():
     parser = argparse.ArgumentParser(description="remind event from vdirs")
+    parser.add_argument('action', default="run", nargs='?', choices=[
+        "run",
+        "test",
+    ])
     parser.add_argument('-c', '--config', type=pathlib.Path,
         default=XDG_CONFIG_HOME / 'remhind' / 'config')
+    parser.add_argument('-t', '--title-template', type=pathlib.Path,
+        default=XDG_CONFIG_HOME / 'remhind' / 'title.j2')
+    parser.add_argument('-m', '--message-template', type=pathlib.Path,
+        default=XDG_CONFIG_HOME / 'remhind' / 'message.j2')
     parser.add_argument('-d', '--database', type=pathlib.Path,
         default=XDG_CACHE_HOME / 'remhind.db')
     parser.add_argument('-v', '--verbose', action='count', default=0)
