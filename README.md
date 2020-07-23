@@ -70,7 +70,7 @@ style them yourself. The template engine is [jinja2](https://jinja.palletsprojec
 and the template files used can be specified with the `--title-template` and
 `--message-template` argument.  
 They default to `~/.config/remhind/title.j2` and `~/.config/remhind/message.j2`.
-`.config` standing for your xdg home directory
+`.config` standing for your xdg config directory
 
 - `alarm`: alarm `{id,message,event,date,due_date}`,
 - `in_time`: "in X days Y hours Z minutes" - a human readable version of difference,
