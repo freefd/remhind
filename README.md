@@ -69,7 +69,8 @@ If you are not satisfied with the look of the default notifications you can
 style them yourself. The template engine is [jinja2](https://jinja.palletsprojects.com/)
 and the template files used can be specified with the `--title-template` and
 `--message-template` argument.  
-They default to `~/.config/remhind/title.j2` and `~/config/remhind/message.j2`
+They default to `~/.config/remhind/title.j2` and `~/.config/remhind/message.j2`.
+`.config` standing for your xdg home directory
 
 - `alarm`: alarm `{id,message,event,date,due_date}`,
 - `in_time`: "in X days Y hours Z minutes" - a human readable version of difference,
