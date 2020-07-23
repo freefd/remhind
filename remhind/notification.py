@@ -40,14 +40,15 @@ class Notifier:
         title, message = self._format_alarm(alarm)
         n = Notify.Notification.new(title, message)
         self._add_notification_timeout(n)
+        self._add_notification_urgency(alarm,n)
         n.show()
 
     def _format_alarm(self, alarm):
-        difference = alarm.due_date - alarm.date
+        time_until_alert = alarm.due_date - alarm.date
         context = {
             "alarm": alarm,
-            "in_time": self._format_time_difference(difference),
-            "difference": difference,
+            "in_time": self._format_time_until_alert(time_until_alert),
+            "time_until_alert": time_until_alert,
             "now": dt.datetime.now()
         }
 
@@ -62,20 +63,20 @@ class Notifier:
     def _format_message(self, context):
         return self._message_template.render(context)
 
-    def _format_time_difference(self, difference):
-        if difference < dt.timedelta(minutes=1):
+    def _format_time_until_alert(self, time_until_alert):
+        if time_until_alert < dt.timedelta(minutes=1):
             return ""
 
-        days, remainder = divmod(difference.seconds, 86400)
+        days, remainder = divmod(time_until_alert.seconds, 86400)
         hours, remainder = divmod(remainder, 3600)
         minutes, seconds = divmod(remainder, 60)
         if seconds > 30:
             minutes += 1
 
         in_time = [ 'in' ]
-        self._pluralize_if_not_zero(in_time, days, 'days')
-        self._pluralize_if_not_zero(in_time, hours, 'hours')
-        self._pluralize_if_not_zero(in_time, minutes, 'minutes')
+        self._pluralize_if_not_zero(in_time, days, 'day')
+        self._pluralize_if_not_zero(in_time, hours, 'hour')
+        self._pluralize_if_not_zero(in_time, minutes, 'minute')
         return " ".join(in_time)
 
     def _pluralize_if_not_zero(self, in_time, number, unit):
@@ -109,3 +110,21 @@ class Notifier:
         timeout = int(config_timeout)
         logging.debug(f'Timeout in milliseconds: '+str(timeout) )
         notification.set_timeout(timeout)
+
+    def _add_notification_urgency(self, alarm, notification):
+        try:
+            urgentAtMinutes = self._config['urgent_at_minutes']
+        except KeyError:
+            logging.debug(f'urgent_at_minutes not set')
+            return
+
+        timeUntilAlert = alarm.due_date - alarm.date
+        urgentAt = dt.timedelta(minutes=urgentAtMinutes)
+
+        beforeUrgentTime = timeUntilAlert > urgentAt
+        if beforeUrgentTime:
+            logging.debug(str(timeUntilAlert)+f' not within '+str(urgentAt))
+            return
+        logging.debug(f'setting notification as urgent')
+        notification.set_urgency(Notify.Urgency.CRITICAL)
+        #notification.set_urgency(Notify.Urgency.LOW)

@@ -31,7 +31,7 @@ async def monitor_file_events(args):
     notifier = Notifier(notifications_config, args.title_template, args.message_template)
 
     if args.action == "test":
-        display_test_event(notifier)
+        display_test_event(notifier, args.in_minutes)
         return
 
     calendars = CalendarStore(config['calendars'].values(), args.database,
@@ -57,6 +57,7 @@ def main():
     parser.add_argument('-d', '--database', type=pathlib.Path,
         default=XDG_CACHE_HOME / 'remhind.db')
     parser.add_argument('-v', '--verbose', action='count', default=0)
+    parser.add_argument('--in-minutes', default=5)
 
     asyncio.run(monitor_file_events(parser.parse_args()))
 

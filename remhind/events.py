@@ -102,13 +102,14 @@ class Alarm:
     due_date: Optional[dt.datetime] = None
 
     @staticmethod
-    def get_example_alarm():
+    def get_example_alarm(in_minutes=5):
         return Alarm(
             id=4522,
             event='58J8X5N2ZGVEGU5TUWURLZKGQIAQQRQ73GVN',
             message='I have a date',
             date_timestamp = _to_utc_timestamp(dt.datetime.now()),
-            due_timestamp = _to_utc_timestamp(dt.datetime.now() + dt.timedelta(minutes=5))
+            due_timestamp = _to_utc_timestamp(dt.datetime.now() +
+                                              dt.timedelta(minutes=int(in_minutes)))
         )
 
     def __post_init__(self, date_timestamp, due_timestamp):
@@ -427,9 +428,9 @@ class CalendarStore:
         for cal_file, component in self._get_components_from_ics(ics):
             self.events.add(component, cal_file)
 
-def display_test_event(notifier):
+def display_test_event(notifier, in_minutes):
     logging.info(f'Displaying test event')
-    event = Alarm.get_example_alarm()
+    event = Alarm.get_example_alarm(in_minutes)
     notifier.show(event)
     logging.debug(f'test event displayed')
 
