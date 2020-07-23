@@ -29,7 +29,7 @@ indicating which directories holds your event files. Here's a simple example:
 ### Default alerts
 
 `remhind` displays notification for calendar events even if they don't have an
-alert set. By deafult his happens at the time the event starts but can
+alert set. By default his happens at the time the event starts but can
 be configured in the configuration file as in the following example.  
 Note that the default is `[ 0 ]` and you have to include `0` in your
 configuration if you want an alert at the time of the event.
