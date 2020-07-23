@@ -73,9 +73,9 @@ class Notifier:
             minutes += 1
 
         in_time = [ 'in' ]
-        self._pluralize_if_not_zero(in_time, days, 'days')
-        self._pluralize_if_not_zero(in_time, hours, 'hours')
-        self._pluralize_if_not_zero(in_time, minutes, 'minutes')
+        self._pluralize_if_not_zero(in_time, days, 'day')
+        self._pluralize_if_not_zero(in_time, hours, 'hour')
+        self._pluralize_if_not_zero(in_time, minutes, 'minute')
         return " ".join(in_time)
 
     def _pluralize_if_not_zero(self, in_time, number, unit):
