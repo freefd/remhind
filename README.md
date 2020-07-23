@@ -67,7 +67,7 @@ values are
 
 If you are not satisfied with the look of the default notifications you can
 style them yourself. The template engine is [jinja2](https://jinja.palletsprojects.com/)
-and the template files used can be specied with the `--title-template` and
+and the template files used can be specified with the `--title-template` and
 `--message-template` argument.  
 They default to `~/.config/remhind/title.j2` and `~/config/remhind/message.j2`
 
