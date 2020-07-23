@@ -29,7 +29,7 @@ indicating which directories holds your event files. Here's a simple example:
 ### Default alerts
 
 `remhind` displays notification for calendar events even if they don't have an
-alert set. By deafult his happens at the time the event starts but can
+alert set. By default his happens at the time the event starts but can
 be configured in the configuration file as in the following example.  
 Note that the default is `[ 0 ]` and you have to include `0` in your
 configuration if you want an alert at the time of the event.
@@ -67,9 +67,10 @@ values are
 
 If you are not satisfied with the look of the default notifications you can
 style them yourself. The template engine is [jinja2](https://jinja.palletsprojects.com/)
-and the template files used can be specied with the `--title-template` and
+and the template files used can be specified with the `--title-template` and
 `--message-template` argument.  
-They default to `~/.config/remhind/title.j2` and `~/config/remhind/message.j2`
+They default to `~/.config/remhind/title.j2` and `~/.config/remhind/message.j2`.
+`.config` standing for your xdg config directory
 
 - `alarm`: alarm,
 - `in_time`: "in X days Y hours Z minutes" - a human readable version of
@@ -77,15 +78,15 @@ They default to `~/.config/remhind/title.j2` and `~/config/remhind/message.j2`
 - `time_until_alert`: shorthand for alarm.due_date - alarm.date
 - `now`: datetime.now()
 
-If no template file is given the following templates will be used
+If no template file is present the following default templates will be used
 
-title
+#### title
 
 ```jinja2
 {{ alarm.due_date.hour }}:{{ alarm.due_date.minute }} {{alarm.message}}
 ```
 
-message
+#### message
 
 ```jinja2
 Alarm
