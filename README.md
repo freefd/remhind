@@ -6,12 +6,37 @@ Those directories will be monitored for change in order to allow you to use
 solution like [vdirsyncer](https://github.com/pimutils/vdirsyncer) to sync your
 CalDAV server with your local filesystem.
 
+## Installing
+
+`remhind` can be installed through PyPI using pip.
+
+```sh
+pip install remhind
+```
+
 ## Getting Started
 
 `remhind` use a [toml](https://github.com/toml-lang/toml) configuration file
 indicating which directories holds your event files. Here's a simple example:
 
+```toml
+[calendars]
+    [calendars.test]
+    name = "Test"
+    path = "~/projets/perso/remhind/test_calendar"
 ```
+
+### Default alerts
+
+`remhind` displays notification for calendar events even if they don't have an
+alert set. By deafult his happens at the time the event starts but can
+be configured in the configuration file as in the following example.  
+Note that the default is `[ 0 ]` and you have to include `0` in your
+configuration if you want an alert at the time of the event.
+
+```toml
+[notifications]
+    alert_before_event_minutes = [ 15, 5, 0 ]
 [calendars]
     [calendars.test]
     name = "Test"
@@ -29,7 +54,7 @@ values are
 - 5000 - A number will be interpreted as timeout in milliseconds. The
     notification will automatically disappear after this time.
 
-```
+```toml
 [notifications]
     timeout = "NEVER"
 [calendars]
@@ -38,12 +63,31 @@ values are
     path = "~/projets/perso/remhind/test_calendar"
 ```
 
-## Installing
+### Notification templates
 
-`remhind` can be installed through PyPI using pip.
+If you are not satisfied with the look of the default notifications you can
+style them yourself. The template engine is [jinja2](https://jinja.palletsprojects.com/)
+and the template files used can be specied with the `--title-template` and
+`--message-template` argument.  
+They default to `~/.config/remhind/title.j2` and `~/config/remhind/message.j2`
 
+- `alarm`: alarm,
+- `in_time`: "in X days Y hours Z minutes" - a human readable version of difference,
+- `difference`: shorthand for alarm.due_date - alarm.date
+- `now`: datetime.now()
+
+If no template file is given the following templates will be used
+
+title
+
+```jinja2
+{{ alarm.due_date.hour }}:{{ alarm.due_date.minute }} {{alarm.message}}
 ```
-pip install remhind
+
+message
+
+```jinja2
+Alarm
 ```
 
 ## Acknowledgments
