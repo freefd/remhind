@@ -71,20 +71,20 @@ and the template files used can be specied with the `--title-template` and
 `--message-template` argument.  
 They default to `~/.config/remhind/title.j2` and `~/config/remhind/message.j2`
 
-- `alarm`: alarm,
+- `alarm`: alarm `{id,message,event,date,due_date}`,
 - `in_time`: "in X days Y hours Z minutes" - a human readable version of difference,
 - `difference`: shorthand for alarm.due_date - alarm.date
 - `now`: datetime.now()
 
-If no template file is given the following templates will be used
+If no template file is present the following default templates will be used
 
-title
+#### title
 
 ```jinja2
 {{ alarm.due_date.hour }}:{{ alarm.due_date.minute }} {{alarm.message}}
 ```
 
-message
+#### message
 
 ```jinja2
 Alarm
