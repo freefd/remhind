@@ -328,7 +328,11 @@ class EventCollection:
                         alarm_dt = event_dt + trigger.dt
 
                 message = component.get('description', summary)
-                if message.upper() == 'NONE':
+                try:
+                   override_alert_message = self._config['override_alert_message']
+                except KeyError:
+                    override_alert_message = []
+                if message.upper() in override_alert_message:
                     message = summary
                 if message:
                     self.db.add_alarm(

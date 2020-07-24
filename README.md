@@ -92,6 +92,21 @@ If no template file is present the following default templates will be used
 Alarm
 ```
 
+### Override alert message
+
+You can specify a list of alert messages which you want replaced by the events
+summary. Not that the message is converted to upper case before being checked
+make sure to write your entries in all upper case.
+
+This is useful for example when using `khal`. `khal` sets reminders without a
+specific message to have the message `None`. The following example will display
+those `khal` reminders with the event summary instead.
+
+```toml
+[notifications]
+    override_alert_message = [ "NONE" ]
+```
+
 ## Acknowledgments
 
 This work has been inspired by the work of the [pimutils group](https://github.com/pimutils)
