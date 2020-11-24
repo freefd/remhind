@@ -6,6 +6,10 @@ Those directories will be monitored for change in order to allow you to use
 solution like [vdirsyncer](https://github.com/pimutils/vdirsyncer) to sync your
 CalDAV server with your local filesystem.
 
+## Changelog
+
+For a list of changes see the [changelog](CHANGELOG.md)
+
 ## Installing
 
 `remhind` can be installed through PyPI using pip.
