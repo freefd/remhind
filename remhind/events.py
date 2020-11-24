@@ -11,7 +11,7 @@ import gi
 import icalendar
 import pytz
 from dateutil.rrule import rruleset, rrulestr
-from tzlocal import get_localzone
+from tzlocal import get_localzone 
 
 LOCAL_TZ = get_localzone()
 MIN_SEQ = -999
@@ -53,10 +53,16 @@ def parse_rule(component):
     rrules = component.get('rrule', [])
     if not isinstance(rrules, list):
         rrules = [rrules]
+
+    tz = str(dtstart.tzinfo)
+    isotime = dtstart.isoformat()
+    time = isotime[:isotime.rfind('+')]
     for rrule in rrules:
-        rule_set.rrule(rrulestr(
-                'RRULE:%s' % rrule.to_ical().decode(),
-                dtstart=dtstart))
+        rule = """
+        DTSTART;TZID=%s:%s
+        RRULE:%s
+        """ % (tz, time, rrule.to_ical().decode())
+        rule_set.rrule(rrulestr(rule))
 
     rdates = component.get('rdate', [])
     if not isinstance(rdates, list):
@@ -69,9 +75,10 @@ def parse_rule(component):
     if not isinstance(exrules, list):
         exrules = [exrules]
     for exrule in exrules:
-        rule_set.exrule(rrulestr(
-                'EXRULE:%s' % exrule.to_ical().decode(),
-                dtstart=dtstart))
+        rule = """
+        DTSTART;TZID=%s:%s
+        EXRULE:%s
+        """ % (tz, time, exrule.to_ical().decode())
 
     exdates = component.get('exdate', [])
     if not isinstance(exdates, list):
