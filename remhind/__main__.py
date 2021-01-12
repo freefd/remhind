@@ -5,7 +5,7 @@ import pathlib
 
 import gi
 import toml
-from xdg import XDG_CONFIG_HOME, XDG_CACHE_HOME
+from xdg import BaseDirectory
 
 from .monitor import monitor_calendars
 from .events import check_events, CalendarStore, display_test_event
@@ -49,13 +49,13 @@ def main():
         "test",
     ])
     parser.add_argument('-c', '--config', type=pathlib.Path,
-        default=XDG_CONFIG_HOME / 'remhind' / 'config')
+        default=BaseDirectory.xdg_config_home +  '/remhind/config')
     parser.add_argument('-t', '--title-template', type=pathlib.Path,
-        default=XDG_CONFIG_HOME / 'remhind' / 'title.j2')
+        default=BaseDirectory.xdg_config_home + '/remhind/title.j2')
     parser.add_argument('-m', '--message-template', type=pathlib.Path,
-        default=XDG_CONFIG_HOME / 'remhind' / 'message.j2')
+        default=BaseDirectory.xdg_config_home + 'remhind/message.j2')
     parser.add_argument('-d', '--database', type=pathlib.Path,
-        default=XDG_CACHE_HOME / 'remhind.db')
+        default=BaseDirectory.xdg_cache_home + 'remhind.db')
     parser.add_argument('-v', '--verbose', action='count', default=0)
     parser.add_argument('--in-minutes', default=5)
 
