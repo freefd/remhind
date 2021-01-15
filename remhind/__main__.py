@@ -53,7 +53,7 @@ def main():
     parser.add_argument('-t', '--title-template', type=pathlib.Path,
         default=BaseDirectory.xdg_config_home + '/remhind/title.j2')
     parser.add_argument('-m', '--message-template', type=pathlib.Path,
-        default=BaseDirectory.xdg_config_home + 'remhind/message.j2')
+        default=BaseDirectory.xdg_config_home + '/remhind/message.j2')
     parser.add_argument('-d', '--database', type=pathlib.Path,
         default=BaseDirectory.xdg_cache_home + 'remhind.db')
     parser.add_argument('-v', '--verbose', action='count', default=0)
